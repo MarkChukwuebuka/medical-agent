@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from services.pubmed import fetch_pubmed_context
 from task_context.risk_boundaries import RISK_BOUNDARIES
 
 
@@ -6,18 +8,16 @@ class Scaffolder:
 
     @staticmethod
     def load_system_role():
-        """
-        Load the system role definition from system_role.txt
-        """
-        role_path = Path("task_context/system_role.txt")
-
-        with open(role_path, "r") as file:
+        with open("task_context/system_role.txt", "r") as file:
             return file.read()
 
     @staticmethod
     def build_prompt(symptoms: str):
 
         system_role = Scaffolder.load_system_role()
+
+        # 🔥 NEW: fetch PubMed context
+        pubmed_context = fetch_pubmed_context(symptoms)
 
         prompt = f"""
             {system_role}
@@ -32,16 +32,43 @@ class Scaffolder:
             
             --------------------------------------------------
             
+            EXTERNAL MEDICAL CONTEXT (PubMed):
+            
+            {pubmed_context}
+            
+            --------------------------------------------------
+            
             PATIENT SYMPTOMS:
             
             {symptoms}
             
             --------------------------------------------------
             
-            INSTRUCTION:
+            IMPORTANT INSTRUCTION:
             
-            Analyze the symptoms carefully and produce the structured JSON output
-            defined in the system role instructions.
+            Based on the symptoms AND the external medical context:
+            
+            1. Estimate infection probability
+            2. Classify risk level
+            3. Suggest MOST LIKELY SUSPECTED INFECTION (non-diagnostic)
+            4. Provide explanation
+            5. Recommend next steps
+            
+            STRICT RULE:
+            - The suspected infection must be expressed as "Possible infection"
+            - Do NOT present it as confirmed diagnosis
+            
+            --------------------------------------------------
+            
+            OUTPUT FORMAT:
+            
+            {{
+              "Infection_Probability": "percentage",
+              "Risk_Level": "Low | Moderate | High",
+              "Suspected_Infection": "possible infection name",
+              "Explanation": "reasoning using symptoms + context",
+              "Recommended_Action": "next step"
+            }}
             """
 
         return prompt

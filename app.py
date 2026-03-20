@@ -24,6 +24,7 @@ if st.button("Assess Risk"):
 
             st.metric("Risk Level", data["Risk_Level"])
             st.write("**Infection Probability:**", data["Infection_Probability"])
+            st.write("**Suspected Infection:**", data["Suspected_Infection"])
             st.write("**Explanation:**", data["Explanation"])
             st.write("**Recommended Action:**", data["Recommended_Action"])
 

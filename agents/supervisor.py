@@ -12,6 +12,7 @@ class Supervisor:
         required_keys = [
             "Infection_Probability",
             "Risk_Level",
+            "Suspected_Infection",
             "Explanation",
             "Recommended_Action"
         ]
